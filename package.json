@@ -1,0 +1,31 @@
+{
+  "name": "hot-manifest-webpack-plugin",
+  "version": "1.0.2",
+  "main": "dist/index.js",
+  "author": "Rohan Kamat",
+  "license": "MIT",
+  "description": "Creates json with the port webpack-dev-server runs on during hot reloading ",
+  "scripts": {
+    "build": "babel src -d dist",
+    "lint": "eslint --fix src",
+    "prebuild": "npm run lint"
+  },
+  "pre-commit": [
+    "lint",
+    "build"
+  ],
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-minify": "^0.2.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.6.0",
+    "eslint": "^4.5.0",
+    "eslint-config-webpack": "^1.2.5",
+    "eslint-plugin-import": "^2.7.0",
+    "pre-commit": "^1.2.2"
+  },
+  "dependencies": {
+    "mkdirp": "^0.5.1"
+  }
+}
