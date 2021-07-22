@@ -6,14 +6,17 @@
   "license": "MIT",
   "description": "Creates json with the port webpack-dev-server runs on during hot reloading ",
   "scripts": {
-    "lint": "eslint --fix src",
-    "prebuild": "npm run lint"
+    "lint": "eslint --fix src"
   },
   "pre-commit": [
     "lint"
   ],
   "devDependencies": {
-    "pre-commit": "^1.2.2"
+    "eslint": "^7.31.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "pre-commit": "^1.2.2",
+    "prettier": "^2.3.2"
   },
   "dependencies": {
     "mkdirp": "^1.0.4"
