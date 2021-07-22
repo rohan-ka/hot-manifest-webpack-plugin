@@ -1,8 +1,10 @@
-const { resolve } = require('path');
+const path = require('path');
 const fs = require('fs');
+const util = require('util');
+
 const mkdirp = require('mkdirp');
 
-module.exports = class HotManifestPlugin {
+class HotManifestPlugin {
   constructor({
     isHot, port, path, filename = 'hot-manifest.json',
   }) {
@@ -10,51 +12,41 @@ module.exports = class HotManifestPlugin {
     this.port = port;
     this.path = path;
     this.filename = filename;
-    this.manifestPath = resolve(path, filename);
-  }
 
-
-  deleteHotManifest() {
-    return new Promise((res) => {
-      // do nothing if there's an error;
-      fs.unlink(this.manifestPath, () => res());
-    });
-  }
-
-  createBuildDirectory() {
-    return new Promise((res, rej) => {
-      mkdirp(this.path, (err) => (err ? rej(err) : res()));
-    });
-  }
-
-  writeManifest(manifest) {
-    return new Promise((res, rej) => {
-      fs.writeFile(this.manifestPath, manifest, (err) => (err ? rej(err) : res()));
-    });
+    this.deleteFile = util.promisify(fs.unlink);
+    this.writeFile = util.promisify(fs.writeFile);
   }
 
   apply(compiler) {
-    const manifest = JSON.stringify({ port: this.port });
-
-
-    compiler.plugin('emit', (compilation, cb) => {
-      const addManifestAsset = () => {
-      // eslint-disable-next-line no-param-reassign
-        compilation.assets[this.filename] = {
-          source: () => manifest,
-          size: () => manifest.length,
-        };
-      };
-
-
-      if (this.isHot) {
-        this.createBuildDirectory()
-          .then(() => this.writeManifest(manifest))
-          .then(addManifestAsset)
-          .then(cb);
-      } else {
-        this.deleteHotManifest().then(cb);
-      }
-    });
+    if(compiler.hooks && compiler.hooks.emit) {
+      compiler.hooks.emit.tapAsync('HotManifestPlugin', this.run.bind(this));
+    } else {
+      compiler.plugin('emit', this.run.bind(this));
+    }
   }
+
+  run(compilation, callback) {
+    const manifestPath = path.resolve(this.path, this.filename);
+    if (this.isHot) {
+      const manifest = JSON.stringify({port: this.port});
+
+      mkdirp(this.path)
+        .then(() => this.writeFile(manifestPath, manifest))
+        .then(() => {
+            // eslint-disable-next-line no-param-reassign
+            compilation.assets[this.filename] = {
+              source: () => manifest,
+              size: () => manifest.length,
+            };
+          })
+        .then(callback);
+    } else {
+      this.deleteFile(manifestPath)
+        .then(callback);
+    }
+  }
+
 };
+
+
+module.exports = HotManifestPlugin;
