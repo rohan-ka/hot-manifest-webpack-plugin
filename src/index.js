@@ -3,6 +3,7 @@ const fs = require('fs');
 const util = require('util');
 
 const mkdirp = require('mkdirp');
+const { ENOENT } = require('constants');
 
 class HotManifestPlugin {
   constructor({ isHot, port, path, filename = 'hot-manifest.json' }) {
@@ -39,7 +40,11 @@ class HotManifestPlugin {
         })
         .then(callback);
     } else {
-      this.deleteFile(manifestPath).then(callback);
+      this.deleteFile(manifestPath)
+        .catch(() => {
+          /* do nothing */
+        })
+        .then(callback);
     }
   }
 }
